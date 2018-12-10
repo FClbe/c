@@ -1,8 +1,19 @@
 # depslib dependency file v1.0
-1538794119 source:d:\codeblocks1111\snakejinjie\main.c
+1544424047 source:d:\codeblocks1111\snakejinjie\main.c
 	<stdio.h>
 	<stdlib.h>
 	<time.h>
 	<conio.h>
 	<windows.h>
+	"snake.h"
+
+1544423690 d:\codeblocks1111\snakejinjie\snake.h
+
+1544423976 source:d:\codeblocks1111\snakejinjie\store.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<conio.h>
+	<windows.h>
+	"snake.h"
 

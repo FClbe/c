@@ -3,15 +3,17 @@
 #include <time.h>
 #include <conio.h>
 #include <windows.h>
+#include "snake.h"
 
 #define W 20 //地图宽度
 #define L 40 //地图长度
 #define S 4//初始化蛇长+1
 
+
+
 void Pos(int x, int y);//光标
 void food();
-void du();
-void tip();
+void poison();
 
 
 char map[W][L];
@@ -19,48 +21,53 @@ int k;//
 int sum = 5;//蛇的总长
 int foodx,foody;//食物坐标
 int foodCount = 0;//食物数量
-int dux,duy;//毒草坐标
-int duCount;//毒草数量
+int foodContinue = 0;//食物连吃数量
+int poisonx,poisony;//毒草坐标
+int poisonxy[2][8];
+int poisonCount;//毒草数量
+int poisonRepalce = 0;//刷新
 int a = 0;
 signed int score = 0;//得分
 int over = 1;//1继续，0结束
-int nandu = 0;//难度
-int sudu = 0;//速度
+int difficult = 0;//难度
+int speed = 0;//速度
 
 struct Snake{
    int x;
    int y;
    struct Snake*next;
-}*current,*snaketail,*head,*snakehead;
+   struct Snake*previous;
+}*current,*snaketail,*head,*snakehead,*tail;
 
 
 void show();
-void remap();
+//void remap();
 void snakelife();
 void freesnake();
 
 int main()
 {
-
     while (1)
     {
-     tip();
-     if (a == 1)
+     tip(a);
+     remap();
+     snakelife();
+     /*if (a == 1)
      {
          printf("请选择难度：\n1、初级\n2、中级\n3、高级\n请选择：");
-         scanf("%d",&nandu);
-         while(nandu != 1 && nandu != 2 && nandu != 3)
+         scanf("%d",&difficult);
+         while(difficult != 1 && difficult != 2 && difficult != 3)
          {
              fflush(stdin);
              printf("请输入正确数字");
-             scanf("%d",&nandu);
+             scanf("%d",&difficult);
          }
-         if (nandu == 1)
-            sudu = 800;
-         else if(nandu == 2)
-            sudu = 400;
+         if (difficult == 1)
+            speed = 800;
+         else if(difficult == 2)
+            speed = 400;
          else
-            sudu = 100;
+            speed = 100;
 
          remap();
          snakelife();
@@ -79,17 +86,12 @@ int main()
      else
      {
          exit(0);
-     }
+     }*/
     }
-
-
-
-
-
 
     return 0;
 }
-void remap()
+/*void remap()
 {
     int i , j;
     for (i = 0; i < W ;i++)
@@ -124,19 +126,8 @@ void remap()
         }
 
     }
-}
-void show()
-{
-    int i , j;
-    for (i = 0; i < W ;i++)
-    {
-        for(j = 0; j < L; j++)
-        {
-            printf("%c",map[i][j]);
-        }
-         printf("\n");
-     }
-}
+}*/
+
 void snakelife()
 {
     int i = 0;
@@ -146,57 +137,93 @@ void snakelife()
     sum = 5;
     foodCount = 0;
     over = 1;
-    duCount = 0;
+    poisonCount = 0;
     current = NULL;
     snaketail = NULL;
     head = NULL;
     snakehead = NULL;
-    //初始化蛇
+    tail = NULL;
+    //初始化蛇***************************************************************************************************
     snaketail = (struct Snake*)malloc(sizeof(struct Snake)) ;
     snaketail->x = 20;
     snaketail->y = 10;
     snaketail->next = NULL;
-    head = snaketail;
+    snaketail->previous = NULL;
+    tail = snaketail;
     for (i = 0; i < S; i++)
     {
-        current = (struct Snake*)malloc(sizeof(struct Snake));
-        snaketail->next = current;
-        current->x = snaketail->x -2;
-        current->y = snaketail->y;
-        current->next = NULL;
-        snaketail = current;
+        if(i == 0)
+        {
+            current = (struct Snake*)malloc(sizeof(struct Snake));
+            snaketail->next = current;
+            current->x = snaketail->x -2;
+            current->y = snaketail->y;
+            current->previous = NULL;
+            current->next = NULL;
+            snaketail = current;
+        }
+        else
+        {
+            current = (struct Snake*)malloc(sizeof(struct Snake));
+            snaketail->next = current;
+            current->x = snaketail->x -2;
+            current->y = snaketail->y;
+            current->next = NULL;
+            current->previous = snaketail;
+            snaketail = current;
+        }
+
     }
-    snakehead = head;
+    snakehead = tail;
     while (snakehead->next != NULL)
         snakehead = snakehead->next;
+
     current = NULL;
-    snaketail = head;
+    snaketail = tail;
     //移动************************************************************************************************************
     while(1)
     {
-        snaketail = head;
+        snaketail = tail;
         food();
 
-        du();
-        Sleep(sudu);
+        poison();
+        Sleep(speed);
     char ch;
     if(_kbhit())
     ch = getch();
+    if(ch == -32)
+    {
+        ch = getch();
+        if(dir != 3 && ch == UP)
+            dir = 1;
+        else if(dir != 2 && ch == RIGHT)
+            dir = 0;
+        else if(dir != 0 && ch == LEFT)
+            dir = 2;
+        else if(dir != 1 && ch == DOWN)
+            dir = 3;
+
+    }
+    else
     switch(ch)
     {
         case 'w':
+        case 'W':
         if(dir != 3)
             dir = 1;
             break;
         case 'd':
+        case 'D':
         if(dir != 2)
             dir = 0 ;
             break;
         case 'a':
+        case 'A':
         if(dir != 0)
             dir = 2;
             break;
         case 's':
+        case 'S':
         if(dir != 1)
             dir = 3;
             break;
@@ -205,9 +232,9 @@ void snakelife()
     }
     if(dir == 0)
     {
-        current = head;
-        a = head->x;
-        b = head->y;
+        current = tail;
+        a = tail->x;
+        b = tail->y;
         while (current != NULL)
         {
             current = snaketail->next;
@@ -219,15 +246,15 @@ void snakelife()
             }
         }
         snaketail->x = snaketail->x + 2;
-        snaketail = head;
+        snaketail = tail;
         Pos (a,b);
         printf(" ");
     }
     else if(dir == 1)
     {
-        current = head;
-        a = head->x;
-        b = head->y;
+        current = tail;
+        a = tail->x;
+        b = tail->y;
         while (current != NULL)
         {
             current = snaketail->next;
@@ -239,7 +266,7 @@ void snakelife()
             }
         }
         snaketail->y = snaketail->y - 1;
-        snaketail = head;
+        snaketail = tail;
         Pos (a,b);
         printf(" ");
 
@@ -247,8 +274,8 @@ void snakelife()
     else if(dir == 2)
     {
         current = snaketail;
-        a = head->x;
-        b = head->y;
+        a = tail->x;
+        b = tail->y;
         while (current != NULL)
         {
             current = snaketail->next;
@@ -261,16 +288,16 @@ void snakelife()
         }
         snaketail->x = snaketail->x - 2;
 
-        snaketail = head;
+        snaketail = tail;
         Pos (a,b);
         printf(" ");
 
     }
     else
     {
-        current = head;
-        a = head->x;
-        b = head->y;
+        current = tail;
+        a = tail->x;
+        b = tail->y;
         while (current != NULL)
         {
             current = snaketail->next;
@@ -282,15 +309,14 @@ void snakelife()
             }
         }
         snaketail->y = snaketail->y + 1;
-        snaketail = head;
+        snaketail = tail;
         Pos (a,b);
         printf(" ");
 
     }
-
     //显示蛇
      current = NULL;
-     current = head;
+     current = tail;
      while (current != NULL)
      {
          Pos(current->x,current->y);
@@ -320,10 +346,9 @@ void snakelife()
              system("pause");
              break;
         }
-
      else if(k==sum-2)
      {
-         snaketail = head;
+         snaketail = tail;
          break;
      }
      else
@@ -331,7 +356,6 @@ void snakelife()
          snaketail = snaketail->next;
          k++;
      }
-
  }
      //吃食物
      if (snakehead->x == foodx && snakehead->y == foody)
@@ -350,56 +374,18 @@ void snakelife()
          current = (struct Snake*)malloc(sizeof(struct Snake));
          current->x = a;
          current->y = b;
-         current->next = head;
-         head = current;
+         current->next = tail;
+         tail->previous = current;
+         tail = current;
          current = NULL;
-
      }
      //吃毒草
-     if (snakehead->x == dux && snakehead->y == duy)
-     {
-         duCount--;
-         sum--;
-         if (sum == 1)
-         {
-             Pos(0,21);
-             printf("很遗憾，你的蛇被毒死了！\n再接再励！\n");
-             printf("你的得分是%d。",score);
-             system("pause");
-             break;
-         }
-         Pos(head->x,head->y);
-         printf(" ");
-         /*Pos(0,22);
-         printf("%p  ",head);
-         printf("%p  ",snaketail);
-         printf("%p  ",snaketail->next);
-         system("pause");*/
-         head = snaketail->next;
-         free(snaketail);
-
-     }
+     eatPoison(poisonxy, poisonCount);
 
   if (over == 0)
     break;
-
-
     }
      freesnake();
-}
-void freesnake()
-{
-    struct Snake*pre;
-     pre = head;
-       while(head != NULL)
-     {
-         pre = head;
-         head = pre->next;
-         free (pre);
-     }
-     pre = NULL;
-     Pos(0,25);
-     printf("Bye!\n");
 }
 
 void Pos(int x, int y)
@@ -412,8 +398,6 @@ void Pos(int x, int y)
     SetConsoleCursorPosition(hOutput,pos);
 
 }
-
-
 void food()
 {
 
@@ -425,16 +409,14 @@ void food()
    foody = rand()%(W-2)+1;
    while (1)//避免食物生在蛇上
 {
-
-        if ((foodx == snaketail->x && foody == snaketail->y)||(dux == foodx&& duy == foody))
+        if ((foodx == snaketail->x && foody == snaketail->y)||(poisonx == foodx&& poisony == foody))
         {
              foodx = (rand()%(L/4))*2;
              foody = rand()%(W-2)+1;
         }
-
      else if(k==sum-1)
      {
-         snaketail = head;
+         snaketail = tail;
          break;
      }
      else
@@ -442,8 +424,6 @@ void food()
          snaketail = snaketail->next;
          k++;
      }
-
-
            }
    if (foodx!=0   &&foody!= 0  )
     foodCount++;
@@ -452,59 +432,111 @@ void food()
       Pos(foodx,foody);
       printf("*");
 }
-void du()
+void poison()
 {
-
-    k=0;
-   while (duCount==0)//生成食物
+    if(poisonCount == 0)
+    {
+   while (poisonCount < 3)//生成毒草
    {
        srand((unsigned)time(NULL));
-   dux = (rand()%(L/4))*2;
-   duy = rand()%(W-2)+1;
-   while (1)//避免食物生在蛇上
-{
-
-        if ((dux == snaketail->x && duy == snaketail->y)||(dux == foodx&& duy == foody))
+       poisonx = (rand()%(L/4))*2;
+       poisony = rand()%(W-2)+1;
+       int i = 0;
+   while (i <= sum - 1)//避免食物生在蛇上
+    {
+        if ((poisonx == snaketail->x && poisony == snaketail->y)||(poisonx == foodx && poisony == foody))
         {
-             dux = (rand()%(L/4))*2;
-             duy = rand()%(W-2)+1;
+             poisonx = (rand()%(L/4))*2;
+             poisony = rand()%(W-2)+1;
+             snaketail = tail;
+             i = 0;
+        }
+        else
+        {
+           snaketail = snaketail->next;
+         i++;
         }
 
-     else if(k == sum-1)
-     {
-         snaketail = head;
-         break;
-     }
-     else
-     {
-         snaketail = snaketail->next;
-         k++;
-     }
+    }
+    snaketail = tail;
+   if (poisonx != 0   && poisony != 0  )
+   {
+       poisonCount++;
+   poisonxy[0][poisonCount - 1] = poisonx;
+   poisonxy[1][poisonCount - 1] = poisony;
+   if(checkPoison(poisonxy, poisonCount) == 1)
+    poisonCount--;
+   }
 
-
-           }
-   if (dux!=0   &&duy!= 0  )
-    duCount++;
     }
     //食物点
-      Pos(dux,duy);
-      printf("@");
-}
-void tip()
-{
-    printf ("欢迎来到贪吃蛇游戏\n");
-    printf("    1、开始游戏\n");
-    printf("    2、游戏说明\n");
-    printf("    3、退出\n");
-    printf("请输入你的选择");
-    scanf("%d",&a);
-    while (a != 1 && a != 2 && a != 3)
+    int i;
+    for(i = 0; i < poisonCount; i++)
     {
-        fflush(stdin);
-        printf("请输入正确数字");
-        scanf("%d",&a);
-
-
+       Pos(poisonxy[0][i],poisonxy[1][i]);
+          printf("@");
     }
+    }
+}
 
+void eatPoison(int npoisonxy[2][8], int nPoisonCount)
+{
+    int i;
+    for(i = 0; i < nPoisonCount; i++)
+    {
+        if(snakehead->x == npoisonxy[0][i] && snakehead->y == npoisonxy[1][i])
+        {
+            if(i < nPoisonCount - 1)
+            {
+                int j;
+                for(j = i; j < nPoisonCount - 1; j++)
+                {
+                    npoisonxy[0][j] = npoisonxy[0][j + 1];
+                    npoisonxy[1][j] = npoisonxy[1][j + 1];
+                }
+            }
+           poisonCount--;
+           sum--;
+           if (sum == 1)
+           {
+             Pos(0,21);
+             printf("很遗憾，你的蛇被毒死了！\n再接再励！\n");
+             printf("你的得分是%d。",score);
+             system("pause");
+             break;
+           }
+           Pos(tail->x,tail->y);
+           printf(" ");
+           tail = snaketail->next;
+           free(snaketail);
+           break;
+        }
+    }
+}
+void freesnake()
+{
+    struct Snake*pre;
+     pre = tail;
+       while(tail != NULL)
+     {
+         pre = tail;
+         tail = pre->next;
+         free (pre);
+     }
+     pre = NULL;
+     Pos(0,25);
+     printf("Bye!\n");
+}
+
+void show()
+{
+    int i , j;
+    for (i = 0; i < W ;i++)
+    {
+        for(j = 0; j < L; j++)
+        {
+            printf("%c",map[i][j]);
+        }
+         printf("\n");
+     }
 }
