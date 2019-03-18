@@ -1,0 +1,10 @@
+﻿  pch.cpp
+  dian3client.cpp
+c:\users\administrator\source\repos\dian3client\dian3client\dian3client.cpp(14): warning C4101: “new_fd”: 未引用的局部变量
+dian3client.obj : error LNK2001: 无法解析的外部符号 __imp__socket@12
+dian3client.obj : error LNK2001: 无法解析的外部符号 __imp__htons@4
+dian3client.obj : error LNK2001: 无法解析的外部符号 __imp__inet_pton@12
+dian3client.obj : error LNK2001: 无法解析的外部符号 __imp__connect@12
+dian3client.obj : error LNK2001: 无法解析的外部符号 __imp__recv@16
+dian3client.obj : error LNK2001: 无法解析的外部符号 __imp__closesocket@4
+C:\Users\Administrator\source\repos\dian3client\Release\dian3client.exe : fatal error LNK1120: 6 个无法解析的外部命令

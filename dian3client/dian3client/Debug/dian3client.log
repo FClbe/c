@@ -1,0 +1,4 @@
+﻿  dian3client.cpp
+c:\users\administrator\source\repos\dian3client\dian3client\dian3client.cpp(26): warning C4101: “s”: 未引用的局部变量
+c:\users\administrator\source\repos\dian3client\dian3client\dian3client.cpp(16): warning C4101: “new_fd”: 未引用的局部变量
+  dian3client.vcxproj -> C:\Users\Administrator\source\repos\dian3client\Debug\dian3client.exe

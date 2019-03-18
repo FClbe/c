@@ -1,0 +1,3 @@
+﻿  dian3.cpp
+c:\users\administrator\source\repos\dian3\dian3\dian3.cpp(107): warning C4101: “new_fd”: 未引用的局部变量
+  dian3.vcxproj -> C:\Users\Administrator\source\repos\dian3\Debug\dian3.exe
